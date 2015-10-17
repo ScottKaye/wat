@@ -50,6 +50,10 @@ code {
 .half-width { width: 50% }
 .half-height { height: 50% }
 
+.shadow {
+	box-shadow: 0 2px 0 $blue, 0 0 25px #000;
+}
+
 #editor {
 	position: absolute;
 	top: 0;
