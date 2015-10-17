@@ -1,11 +1,16 @@
 class Runner {
-	constructor({ editor, output, time, memory, success, trace }) {
+	constructor({ editor, output, time, memory, success, trace, input }) {
+		if (!WatStatic) {
+			throw new Error("Wat?  WatStatic wasn't found in the globals.");
+		}
+
 		this.editor = editor;
 		this.output = output;
 		this.time = time;
 		this.memory = memory;
 		this.success = success;
 		this.trace = trace;
+		this.input = input;
 		this.timer;
 	}
 	refresh () {
@@ -33,8 +38,33 @@ class Runner {
 			console.log(output, memory, time, overflow, trace);
 		}, false);
 
+		//Substitute prompts with raw input
+		//First calculate where substitutions need to be made
+		let subs = [];
+		let parsedProgram = WatStatic.getRawCommands(this.editor.value);
+		this.input.value.split(" ")
+			.forEach(i => {
+				let idx = parsedProgram.indexOf(',');
+				if (idx >= 0) {
+					subs.push({idx, val: i[0] || " "});
+				}
+			});
+
+		//Now substitute, if there are any
+		let program = this.editor.value;
+		if (subs.length) {
+			program = [...program];
+			subs.forEach(s => {
+				//First insert a space to break up numbers, then the input, then a read character
+				program[s.idx] = ' ';
+				program.splice(s.idx + 1, 0, s.val);
+				program.splice(s.idx + 2, 0, '?');
+			});
+			program = program.join("");
+		}
+
 		worker.postMessage({
-			program: this.editor.value,
+			program,
 			options: {
 				trace: true
 			}

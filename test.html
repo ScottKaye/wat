@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Test</title>
+</head>
+<body>
+	
+	<script src="src/lib/browser-polyfill.min.js"></script>
+	<script src="src/lib/wat-static.js"></script>
+	<script src="src/lib/wat.js"></script>
+	<script>
+		var wat = new Wat(",.");
+		var out = wat.run();
+		console.log(out);
+	</script>
+
+</body>
+</html>

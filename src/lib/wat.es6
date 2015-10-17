@@ -1,9 +1,12 @@
-self.importScripts("browser-polyfill.min.js");
+if (self.importScripts) {
+	self.importScripts("browser-polyfill.min.js");
+	self.importScripts("wat-static.js");
 
-self.addEventListener("message", function(msg) {
-	const wat = new Wat(msg.data.program, msg.data.options);
-	self.postMessage(wat.run());
-}, false);
+	self.addEventListener("message", function(msg) {
+		const wat = new Wat(msg.data.program, msg.data.options);
+		self.postMessage(wat.run());
+	}, false);
+}
 
 class Wat {
 	constructor(str, { stepThrough = false, trace = false } = {}) {
@@ -48,9 +51,7 @@ class Wat {
 		let brackets = [];
 
 		//Splits raw program into groups that are not inside quotes (literals), then splits each match into character arrays
-		let bytes = str.match(/(^|")([^"]*)(?:$|")/g)
-			.map(m => m.split(""))
-			.reduce((a, b) => a.concat(b));
+		let bytes = WatStatic.getRawCommands(str);
 
 		/*
 		b: byte/decimal number
@@ -129,7 +130,10 @@ class Wat {
 	get () {
 		let input = prompt('Input');
 		if (input === null) this.constructor.max = 0;
-		else this.memory[this.dp] = input;
+		else {
+			if (isNaN(input)) input = input.charCodeAt(0);
+			this.memory[this.dp] = input;
+		}
 	}
 	//Jumps to close brace if current cell is 0
 	openLoop () {
@@ -177,11 +181,11 @@ class Wat {
 		this.copyOver = !this.copyOver;
 	}
 	//Inserts the character immediately preceding this command to the current cell
-	//If that character is a number, insert it directly, otherwise insert its ASCII codee
+	//If that character is a number, insert it directly, otherwise insert its ASCII code
 	read (i) {
 		let value = this.raw[i - 1];
 
-		//If the value given is an number, don't convert it to a char code
+		//If the value given is not a number (or is a space), convert it to it's ASCII code
 		if (isNaN(value) || value.charCodeAt(0) === 32) {
 			value = value.charCodeAt(0);
 		} else {
@@ -190,7 +194,8 @@ class Wat {
 			let current = this.raw[--i].trim();
 			while (!isNaN(current) && current.length > 0 && --this.constructor.max) {
 				nums.push(current);
-				current = this.raw[--i].trim();
+				current = this.raw[--i];
+				if (current) current = current.trim();
 			}
 			value = +nums.reverse().join("");
 		}
@@ -204,17 +209,23 @@ class Wat {
 
 		//If this is the start quote
 		if (this.quoteOpen) {
+			let { copyOver } = this;
+			this.copyOver = false;
+
 			//Read everything until the next " into respective cells, starting at dp
 			let first = i + 1;
 			let sub = this.raw.slice(first, this.raw.indexOf(`"`, first));
-			--this.dp;
+			this.left();
 
 			//Inserts every character as an ASCII code
 			//Numbers will be converted to strings (30 => [51, 48])
 			sub.match(/(.+?)/gi).forEach(b => {
 				b = b.charCodeAt(0);
-				this.memory[++this.dp] = b;
+				this.right();
+				this.memory[this.dp] = b;
 			});
+
+			this.copyOver = copyOver;
 		}
 	}
 	run () {

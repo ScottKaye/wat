@@ -10,12 +10,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-self.importScripts("browser-polyfill.min.js");
+if (self.importScripts) {
+	self.importScripts("browser-polyfill.min.js");
+	self.importScripts("wat-static.js");
 
-self.addEventListener("message", function (msg) {
-	var wat = new Wat(msg.data.program, msg.data.options);
-	self.postMessage(wat.run());
-}, false);
+	self.addEventListener("message", function (msg) {
+		var wat = new Wat(msg.data.program, msg.data.options);
+		self.postMessage(wat.run());
+	}, false);
+}
 
 var Wat = (function () {
 	function Wat(str) {
@@ -71,11 +74,7 @@ var Wat = (function () {
 		var brackets = [];
 
 		//Splits raw program into groups that are not inside quotes (literals), then splits each match into character arrays
-		var bytes = str.match(/(^|")([^"]*)(?:$|")/g).map(function (m) {
-			return m.split("");
-		}).reduce(function (a, b) {
-			return a.concat(b);
-		});
+		var bytes = WatStatic.getRawCommands(str);
 
 		/*
   b: byte/decimal number
@@ -200,7 +199,10 @@ var Wat = (function () {
 		key: "get",
 		value: function get() {
 			var input = prompt('Input');
-			if (input === null) this.constructor.max = 0;else this.memory[this.dp] = input;
+			if (input === null) this.constructor.max = 0;else {
+				if (isNaN(input)) input = input.charCodeAt(0);
+				this.memory[this.dp] = input;
+			}
 		}
 
 		//Jumps to close brace if current cell is 0
@@ -285,13 +287,13 @@ var Wat = (function () {
 		}
 
 		//Inserts the character immediately preceding this command to the current cell
-		//If that character is a number, insert it directly, otherwise insert its ASCII codee
+		//If that character is a number, insert it directly, otherwise insert its ASCII code
 	}, {
 		key: "read",
 		value: function read(i) {
 			var value = this.raw[i - 1];
 
-			//If the value given is an number, don't convert it to a char code
+			//If the value given is not a number (or is a space), convert it to it's ASCII code
 			if (isNaN(value) || value.charCodeAt(0) === 32) {
 				value = value.charCodeAt(0);
 			} else {
@@ -300,7 +302,8 @@ var Wat = (function () {
 				var current = this.raw[--i].trim();
 				while (!isNaN(current) && current.length > 0 && --this.constructor.max) {
 					nums.push(current);
-					current = this.raw[--i].trim();
+					current = this.raw[--i];
+					if (current) current = current.trim();
 				}
 				value = +nums.reverse().join("");
 			}
@@ -319,17 +322,24 @@ var Wat = (function () {
 
 			//If this is the start quote
 			if (this.quoteOpen) {
+				var copyOver = this.copyOver;
+
+				this.copyOver = false;
+
 				//Read everything until the next " into respective cells, starting at dp
 				var first = i + 1;
 				var sub = this.raw.slice(first, this.raw.indexOf("\"", first));
-				--this.dp;
+				this.left();
 
 				//Inserts every character as an ASCII code
 				//Numbers will be converted to strings (30 => [51, 48])
 				sub.match(/(.+?)/gi).forEach(function (b) {
 					b = b.charCodeAt(0);
-					_this3.memory[++_this3.dp] = b;
+					_this3.right();
+					_this3.memory[_this3.dp] = b;
 				});
+
+				this.copyOver = copyOver;
 			}
 		}
 	}, {

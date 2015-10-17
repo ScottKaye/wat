@@ -10,6 +10,7 @@
 	<section class="flex padding full-height">
 		<div class="full-width half-height">
 			<textarea id="editor">12"Hello World!"!</textarea>
+			<input id="input" placeholder="Input values, separated by a space" autocomplete="off">
 			<section id="controls">
 				<button id="refresh">Run (ctrl+enter)</button>
 			</section>
@@ -29,14 +30,15 @@
 			<div id="memory"></div>
 		</div>
 		<div class="half-width half-height">
-			<div id="success"></div>
 			<h1>Trace</h1>
+			<div id="success"></div>
 			<p>Full debug information is available in the developer console.</p>
 			<p><code string>command</code> <code number>instructionID</code></p>
 			<ul id="trace"></ul>
 		</div>
 	</section>
 
+	<script src="src/lib/wat-static.js"></script>
 	<script src="src/runner.js"></script>
 	<script>
 		var editor = document.getElementById("editor");
@@ -46,7 +48,7 @@
 		var success = document.getElementById("success");
 		var trace = document.getElementById("trace");
 
-		var runner = new Runner({ editor, output, time, memory, success, trace });
+		var runner = new Runner({ editor, output, time, memory, success, trace, input });
 
 		document.getElementById("refresh").addEventListener("click", function() {
 			runner.refresh();
