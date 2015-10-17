@@ -1,0 +1,1 @@
+{"version":3,"sources":["test2.js"],"names":[],"mappings":";;AAAA,SAAS,EAAE,CAAC,GAAG,EAAE;AAChB,MAAK,CAAC,GAAG,CAAC,CAAC;CACX","file":"true","sourcesContent":["function yo(eee) {\r\n\talert(eee);\r\n}"]}
