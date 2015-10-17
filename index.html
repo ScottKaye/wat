@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>wat Interpreter</title>
+	<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+	<section class="flex padding full-height">
+		<div class="full-width half-height">
+			<textarea id="editor">12"Hello World!"!</textarea>
+			<section id="controls">
+				<button id="refresh">Run (ctrl+enter)</button>
+			</section>
+		</div>
+		<div class="half-width half-height">
+			<div class="flex">
+				<div class="half-width">
+					<h1>Output</h1>
+					<pre id="output"></pre>
+				</div>
+				<div class="half-width">
+					<h1>Time</h1>
+					<span id="time"></span>
+				</div>
+			</div>
+			<h1>Memory</h1>
+			<div id="memory"></div>
+		</div>
+		<div class="half-width half-height">
+			<div id="success"></div>
+			<h1>Trace</h1>
+			<p>Full debug information is available in the developer console.</p>
+			<p><code string>command</code> <code number>instructionID</code></p>
+			<ul id="trace"></ul>
+		</div>
+	</section>
+
+	<script src="src/runner.js"></script>
+	<script>
+		var editor = document.getElementById("editor");
+		var output = document.getElementById("output");
+		var time = document.getElementById("time");
+		var memory = document.getElementById("memory");
+		var success = document.getElementById("success");
+		var trace = document.getElementById("trace");
+
+		var runner = new Runner({ editor, output, time, memory, success, trace });
+
+		document.getElementById("refresh").addEventListener("click", function() {
+			runner.refresh();
+		}, false);
+
+		editor.addEventListener("keyup", function(e) {
+			if (e.ctrlKey && e.which === 13) {
+				runner.refresh();
+			}
+		});
+
+		runner.refresh();
+	</script>
+
+</body>
+</html>

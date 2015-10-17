@@ -1,3 +1,10 @@
+self.importScripts("browser-polyfill.min.js");
+
+self.addEventListener("message", function(msg) {
+	const wat = new Wat(msg.data.program, msg.data.options);
+	self.postMessage(wat.run());
+}, false);
+
 class Wat {
 	constructor(str, { stepThrough = false, trace = false } = {}) {
 		this.constructor.max = 3000;
@@ -15,13 +22,14 @@ class Wat {
 			')': this.sub,
 			'{': this.mult,
 			'}': this.div,
-			'/': this.clear,
+			'/': this.reset,
 			'!': this.printAll,
 			"'": this.toggleCopyOver,
 			'?': this.read,
 			'"': this.readStream
 		};
 
+		//Use first number as size, or default to 5
 		this.memory = new Uint8Array(+str.match(/\d+/) || 5);
 		this.dp = 0;
 		this.ip = 0;
@@ -34,6 +42,7 @@ class Wat {
 
 		this.stepThrough = stepThrough;
 		this.trace = trace;
+		this._trace = [];
 
 		let openBrackets = 0;
 		let brackets = [];
@@ -76,6 +85,7 @@ class Wat {
 				return c;
 			});
 	}
+	//Generator to return each command as they are processed
 	*commands () {
 		let command = this.program[this.ip++];
 		if (command) yield command;
@@ -157,7 +167,7 @@ class Wat {
 	}
 	//Moves the current cell value to cell 0, moves the data pointer to 0, clear all cells except 0
 	//If the data pointer is already at 0, clear all cells
-	clear () {
+	reset () {
 		this.memory[0] = this.memory[this.dp];
 		this.memory.fill(0, 1 - +(!this.dp));
 		this.dp = 0;
@@ -208,18 +218,16 @@ class Wat {
 		}
 	}
 	run () {
-		let max = this.constructor.max;
 		let command = this.commands().next();
 
-		let start = performance.now();
+		const start = performance.now();
 
-		while (!command.done && --max) {
-			let prev;
-
+		while (!command.done && --this.constructor.max) {
 			if (this.trace) {
-				console.log(command.value);
+				this._trace.push(command.value);
 			}
 
+			//Execute command from mapping, if the mapping exists
 			let fn = this.constructor.mapping[command.value.b];
 			if (fn) {
 				fn.call(this, command.value.i);
@@ -228,29 +236,20 @@ class Wat {
 			command = this.commands().next();
 		}
 
-		let end = performance.now();
-		let time = (end - start).toFixed(4);
-
-		if (max <= 0) console.error("Overflowed!");
-
-		console.log("Memory\t\t", this.memory);
-		console.log("Output\t\t", this.output);
-		console.log("Time (ms)\t", time);
+		const end = performance.now();
+		const time = (end - start).toFixed(4);
 
 		//Clean up final object
 		delete this.bracketsOpen;
 		delete this.quoteOpen;
 		delete this.copyOver;
-	};
+
+		return {
+			output: this.output,
+			memory: this.memory,
+			time: time,
+			overflow: this.constructor.max <= 0,
+			trace: this._trace
+		};
+	}
 }
-
-
-let wat = new Wat(String.raw`
-	H?.e?.l?..o?. ?.W?.o?.r?.l?.d?."!".
-`, {
-	stepThrough: true,
-	trace: false
-});
-
-wat.run();
-console.log(wat);

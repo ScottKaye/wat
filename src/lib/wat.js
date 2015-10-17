@@ -1,15 +1,21 @@
-'use strict';
+"use strict";
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _templateObject = _taggedTemplateLiteral(['+-><.,[](){}/!\'"?'], ['+-><.,[](){}/!\'"?']),
-    _templateObject2 = _taggedTemplateLiteral(['\n\tH?.e?.l?..o?. ?.W?.o?.r?.l?.d?."!".\n'], ['\n\tH?.e?.l?..o?. ?.W?.o?.r?.l?.d?."!".\n']);
+var _templateObject = _taggedTemplateLiteral(["+-><.,[](){}/!'\"?"], ["+-><.,[](){}/!'\"?"]);
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+
+self.importScripts("browser-polyfill.min.js");
+
+self.addEventListener("message", function (msg) {
+	var wat = new Wat(msg.data.program, msg.data.options);
+	self.postMessage(wat.run());
+}, false);
 
 var Wat = (function () {
 	function Wat(str) {
@@ -39,13 +45,14 @@ var Wat = (function () {
 			')': this.sub,
 			'{': this.mult,
 			'}': this.div,
-			'/': this.clear,
+			'/': this.reset,
 			'!': this.printAll,
 			"'": this.toggleCopyOver,
 			'?': this.read,
 			'"': this.readStream
 		};
 
+		//Use first number as size, or default to 5
 		this.memory = new Uint8Array(+str.match(/\d+/) || 5);
 		this.dp = 0;
 		this.ip = 0;
@@ -58,6 +65,7 @@ var Wat = (function () {
 
 		this.stepThrough = stepThrough;
 		this.trace = trace;
+		this._trace = [];
 
 		var openBrackets = 0;
 		var brackets = [];
@@ -104,8 +112,10 @@ var Wat = (function () {
 		});
 	}
 
+	//Generator to return each command as they are processed
+
 	_createClass(Wat, [{
-		key: 'commands',
+		key: "commands",
 		value: regeneratorRuntime.mark(function commands() {
 			var command;
 			return regeneratorRuntime.wrap(function commands$(context$2$0) {
@@ -122,10 +132,10 @@ var Wat = (function () {
 						return command;
 
 					case 4:
-						return context$2$0.abrupt('return');
+						return context$2$0.abrupt("return");
 
 					case 5:
-					case 'end':
+					case "end":
 						return context$2$0.stop();
 				}
 			}, commands, this);
@@ -133,7 +143,7 @@ var Wat = (function () {
 
 		//Move data pointer right, or wrap
 	}, {
-		key: 'right',
+		key: "right",
 		value: function right() {
 			var prev = this.memory[this.dp];
 			if (++this.dp > this.memory.length - 1) this.dp = 0;
@@ -144,7 +154,7 @@ var Wat = (function () {
 
 		//Move data pointer left, or wrap
 	}, {
-		key: 'left',
+		key: "left",
 		value: function left() {
 			var prev = this.memory[this.dp];
 			if (--this.dp < 0) this.dp = this.memory.length - 1;
@@ -155,28 +165,28 @@ var Wat = (function () {
 
 		//Increment cell at data pointer
 	}, {
-		key: 'inc',
+		key: "inc",
 		value: function inc() {
 			this.memory[this.dp] = (this.memory[this.dp] || 0) + 1;
 		}
 
 		//Decrement cell at data pointer
 	}, {
-		key: 'dec',
+		key: "dec",
 		value: function dec() {
 			this.memory[this.dp] = (this.memory[this.dp] || 0) - 1;
 		}
 
 		//Add cell at data pointer to output
 	}, {
-		key: 'print',
+		key: "print",
 		value: function print() {
 			this.output += String.fromCharCode(this.memory[this.dp]);
 		}
 
 		//Add all cells to output
 	}, {
-		key: 'printAll',
+		key: "printAll",
 		value: function printAll(i) {
 			var _this2 = this;
 
@@ -187,7 +197,7 @@ var Wat = (function () {
 
 		//Prompt for user input
 	}, {
-		key: 'get',
+		key: "get",
 		value: function get() {
 			var input = prompt('Input');
 			if (input === null) this.constructor.max = 0;else this.memory[this.dp] = input;
@@ -195,7 +205,7 @@ var Wat = (function () {
 
 		//Jumps to close brace if current cell is 0
 	}, {
-		key: 'openLoop',
+		key: "openLoop",
 		value: function openLoop() {
 			if (this.memory[this.dp] === 0) {
 				//Move ahead to matching ]
@@ -206,7 +216,7 @@ var Wat = (function () {
 
 		//Jumps to open brace if current cell is not 0
 	}, {
-		key: 'closeLoop',
+		key: "closeLoop",
 		value: function closeLoop() {
 			if (this.memory[this.dp] !== 0) {
 				//Move back to matching [
@@ -217,7 +227,7 @@ var Wat = (function () {
 
 		//Stores the result of adding all cells to the current cell
 	}, {
-		key: 'add',
+		key: "add",
 		value: function add() {
 			this.memory[this.dp] = this.memory.reduce(function (p, c) {
 				return p + c;
@@ -226,7 +236,7 @@ var Wat = (function () {
 
 		//Stores the result of subtracting all cells to the current cell
 	}, {
-		key: 'sub',
+		key: "sub",
 		value: function sub() {
 			this.memory[this.dp] = this.memory.reduce(function (p, c) {
 				return p - c;
@@ -235,7 +245,7 @@ var Wat = (function () {
 
 		//Stores the result of multiplying all non-zero cells to the current cell
 	}, {
-		key: 'mult',
+		key: "mult",
 		value: function mult() {
 			var total = 1;
 			this.memory.filter(function (b) {
@@ -248,7 +258,7 @@ var Wat = (function () {
 
 		//Stores the result of divigind all non-zero cells to the current cell
 	}, {
-		key: 'div',
+		key: "div",
 		value: function div() {
 			this.memory[this.dp] = this.memory.filter(function (b) {
 				return b;
@@ -260,8 +270,8 @@ var Wat = (function () {
 		//Moves the current cell value to cell 0, moves the data pointer to 0, clear all cells except 0
 		//If the data pointer is already at 0, clear all cells
 	}, {
-		key: 'clear',
-		value: function clear() {
+		key: "reset",
+		value: function reset() {
 			this.memory[0] = this.memory[this.dp];
 			this.memory.fill(0, 1 - +!this.dp);
 			this.dp = 0;
@@ -269,7 +279,7 @@ var Wat = (function () {
 
 		//Toggles a flag deciding whether or not to copy values when moving the data pointer
 	}, {
-		key: 'toggleCopyOver',
+		key: "toggleCopyOver",
 		value: function toggleCopyOver() {
 			this.copyOver = !this.copyOver;
 		}
@@ -277,7 +287,7 @@ var Wat = (function () {
 		//Inserts the character immediately preceding this command to the current cell
 		//If that character is a number, insert it directly, otherwise insert its ASCII codee
 	}, {
-		key: 'read',
+		key: "read",
 		value: function read(i) {
 			var value = this.raw[i - 1];
 
@@ -301,7 +311,7 @@ var Wat = (function () {
 		//Similar to read, except this reads every character until a closing " is found
 		//Each insertion (every character) increments the data pointer
 	}, {
-		key: 'readStream',
+		key: "readStream",
 		value: function readStream(i) {
 			var _this3 = this;
 
@@ -311,7 +321,7 @@ var Wat = (function () {
 			if (this.quoteOpen) {
 				//Read everything until the next " into respective cells, starting at dp
 				var first = i + 1;
-				var sub = this.raw.slice(first, this.raw.indexOf('"', first));
+				var sub = this.raw.slice(first, this.raw.indexOf("\"", first));
 				--this.dp;
 
 				//Inserts every character as an ASCII code
@@ -323,20 +333,18 @@ var Wat = (function () {
 			}
 		}
 	}, {
-		key: 'run',
+		key: "run",
 		value: function run() {
-			var max = this.constructor.max;
 			var command = this.commands().next();
 
 			var start = performance.now();
 
-			while (!command.done && --max) {
-				var prev = undefined;
-
+			while (!command.done && --this.constructor.max) {
 				if (this.trace) {
-					console.log(command.value);
+					this._trace.push(command.value);
 				}
 
+				//Execute command from mapping, if the mapping exists
 				var fn = this.constructor.mapping[command.value.b];
 				if (fn) {
 					fn.call(this, command.value.i);
@@ -348,26 +356,20 @@ var Wat = (function () {
 			var end = performance.now();
 			var time = (end - start).toFixed(4);
 
-			if (max <= 0) console.error("Overflowed!");
-
-			console.log("Memory\t\t", this.memory);
-			console.log("Output\t\t", this.output);
-			console.log("Time (ms)\t", time);
-
 			//Clean up final object
 			delete this.bracketsOpen;
 			delete this.quoteOpen;
 			delete this.copyOver;
+
+			return {
+				output: this.output,
+				memory: this.memory,
+				time: time,
+				overflow: this.constructor.max <= 0,
+				trace: this._trace
+			};
 		}
 	}]);
 
 	return Wat;
 })();
-
-var wat = new Wat(String.raw(_templateObject2), {
-	stepThrough: true,
-	trace: false
-});
-
-wat.run();
-console.log(wat);
