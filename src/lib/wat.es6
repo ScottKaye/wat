@@ -185,7 +185,7 @@ class Wat {
 	read (i) {
 		let value = this.raw[i - 1];
 
-		//If the value given is not a number (or is a space), convert it to it's ASCII code
+		//If the value given is not a number (or is a space), convert it to its ASCII code
 		if (isNaN(value) || value.charCodeAt(0) === 32) {
 			value = value.charCodeAt(0);
 		} else {
