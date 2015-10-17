@@ -3,7 +3,7 @@
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _templateObject = _taggedTemplateLiteral(['+-><.,[](){}/!\'"?'], ['+-><.,[](){}/!\'"?']),
-    _templateObject2 = _taggedTemplateLiteral(['\n\t30\'>++++++++[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]>-----.>->\n+++..+++.>-.<<+[>[+>+]>>]<--------------.>>.+++.------.--------.>+.>+.\n'], ['\n\t30\'>++++++++[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]>-----.>->\n+++..+++.>-.<<+[>[+>+]>>]<--------------.>>.+++.------.--------.>+.>+.\n']);
+    _templateObject2 = _taggedTemplateLiteral(['\n\tH?.e?.l?..o?. ?.W?.o?.r?.l?.d?."!".\n'], ['\n\tH?.e?.l?..o?. ?.W?.o?.r?.l?.d?."!".\n']);
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
@@ -282,7 +282,7 @@ var Wat = (function () {
 			var value = this.raw[i - 1];
 
 			//If the value given is an number, don't convert it to a char code
-			if (isNaN(value)) {
+			if (isNaN(value) || value.charCodeAt(0) === 32) {
 				value = value.charCodeAt(0);
 			} else {
 				//Attempt to find all parts of the number, in case it is multiple digits long

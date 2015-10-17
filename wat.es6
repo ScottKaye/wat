@@ -172,7 +172,7 @@ class Wat {
 		let value = this.raw[i - 1];
 
 		//If the value given is an number, don't convert it to a char code
-		if (isNaN(value)) {
+		if (isNaN(value) || value.charCodeAt(0) === 32) {
 			value = value.charCodeAt(0);
 		} else {
 			//Attempt to find all parts of the number, in case it is multiple digits long
@@ -246,8 +246,7 @@ class Wat {
 
 
 let wat = new Wat(String.raw`
-	30'>++++++++[-<+++++++++>]<.>>+>-[+]++>++>+++[>[->+++<<+++>]<<]>-----.>->
-+++..+++.>-.<<+[>[+>+]>>]<--------------.>>.+++.------.--------.>+.>+.
+	H?.e?.l?..o?. ?.W?.o?.r?.l?.d?."!".
 `, {
 	stepThrough: true,
 	trace: false
