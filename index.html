@@ -43,6 +43,8 @@
 	</section>
 
 	<script src="site/remember-me.js"></script>
+	<script src="site/url.js"></script>
+	<script src="site/lz-string.min.js"></script>
 	<script src="src/lib/wat-static.js"></script>
 	<script src="src/runner.js"></script>
 	<script>
@@ -63,9 +65,19 @@
 			if (e.ctrlKey && e.which === 13) {
 				runner.refresh();
 			}
+
+			Url.setHashParam("p", LZString.compressToEncodedURIComponent(editor.value));
 		});
 
 		runner.refresh();
+
+		var hashProgram = LZString.decompressFromEncodedURIComponent(Url.getHashParam("p"));
+		if (hashProgram) {
+			//Overwrite remember-me if a program is found in the hash
+			setTimeout(function() {
+				editor.value = hashProgram;
+			}, 0);
+		}
 	</script>
 
 </body>
