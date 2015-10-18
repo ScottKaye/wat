@@ -23,7 +23,7 @@ class Runner {
 
 			//Copy Uint8 values into dynamic memory
 			let writableMemory = [];
-			memory.forEach(m => writableMemory.push(m));
+			memory.slice(0, 1000).forEach(m => writableMemory.push(m));
 
 			this.output.innerHTML = `<code string>${output}</code>`;
 			this.memory.innerHTML = writableMemory.map(m => {

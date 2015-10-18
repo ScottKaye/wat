@@ -51,7 +51,7 @@ var Runner = (function () {
 
 				//Copy Uint8 values into dynamic memory
 				var writableMemory = [];
-				memory.forEach(function (m) {
+				memory.slice(0, 1000).forEach(function (m) {
 					return writableMemory.push(m);
 				});
 
