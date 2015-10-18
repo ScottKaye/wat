@@ -121,7 +121,7 @@ class Wat {
 		this.output += String.fromCharCode(this.memory[this.dp]);
 	}
 	//Add all cells to output
-	printAll (i) {
+	printAll () {
 		this.memory.forEach(b => {
 			this.output += String.fromCharCode(b);
 		});

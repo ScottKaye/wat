@@ -186,7 +186,7 @@ var Wat = (function () {
 		//Add all cells to output
 	}, {
 		key: "printAll",
-		value: function printAll(i) {
+		value: function printAll() {
 			var _this2 = this;
 
 			this.memory.forEach(function (b) {
